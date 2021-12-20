@@ -7,7 +7,7 @@ spring:
     driver-class-name: com.mysql.cj.jdbc.Driver
     url: "jdbc:mysql://localhost:3306/yuneban?useUnicode=true&characterEncoding=UTF-8&serverTimezone=Asia/Shanghai"
     username: root
-    password: 123456
+    password: 12345678
   redis:
     timeout: 10000ms
     host: 127.0.0.1
