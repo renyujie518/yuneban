@@ -36,11 +36,11 @@ logging:
     com.renyujie.server.mapper: debug
 
 jwt:
-  # Jwt存储的请求头
+  # Jwt存储的请求头(key)
   tokenHeader: Authorization
   # Jwt加密秘钥
   secret: yeb-secret
   # Jwt 的超期限时间（60*60）*24
   expiration: 604800
-  # Jwt负载中拿到开头
+  # Jwt负载中token开头
   tokenHead: Bearer
