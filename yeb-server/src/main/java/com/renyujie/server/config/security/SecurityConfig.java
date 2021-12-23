@@ -1,6 +1,8 @@
 package com.renyujie.server.config.security;
 
 import com.renyujie.server.config.jwt.JwtAuthenticationTokenFilter;
+import com.renyujie.server.config.jwt.RestAuthorizationEntryPoint;
+import com.renyujie.server.config.jwt.RestfulAccessDeniedHandler;
 import com.renyujie.server.pojo.Admin;
 import com.renyujie.server.service.IAdminService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -27,12 +29,17 @@ import org.springframework.security.web.authentication.UsernamePasswordAuthentic
 public class SecurityConfig extends WebSecurityConfigurerAdapter {
     @Autowired
     private IAdminService adminService;
+    @Autowired
+    private RestAuthorizationEntryPoint restAuthorizationEntryPoint;
+    @Autowired
+    private RestfulAccessDeniedHandler restfulAccessDeniedHandler;
 
 
 
 
     /**
-     * @Description: 重写改造userDetailsService中根据username返回用户信息
+     * @Description: 重写userDetailsService.loadUserByUsername(userName)方法
+     * 实际上是在数据库中根据username返回用户信息（这样等同于登录）
      */
     @Override
     @Bean
@@ -74,7 +81,7 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
         http.csrf()
                 //使用jwt,不需要csrf
                 .disable()
-                //基于token不需要token
+                //基于token不需要session
                 .sessionManagement()
                 .sessionCreationPolicy(SessionCreationPolicy.STATELESS)
                 .and()
@@ -94,8 +101,8 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
         http.addFilterBefore(jwtAuthenticationTokenFilter(), UsernamePasswordAuthenticationFilter.class);
         //添加自定义未授权结果返回
         http.exceptionHandling()
-                .accessDeniedHandler()
-                .authenticationEntryPoint();
+                .accessDeniedHandler(restfulAccessDeniedHandler)
+                .authenticationEntryPoint(restAuthorizationEntryPoint);
     }
 
     /**

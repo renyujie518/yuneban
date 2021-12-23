@@ -22,7 +22,7 @@ public interface IAdminService extends IService<Admin> {
     RespBean login(String username, String password, String code, HttpServletRequest request);
 
     /**
-     * @Description: 通过username获取用户信息
+     * @Description: 从数据库中通过username获取用户信息
      */
     Admin getAdminByName(String username);
 }
