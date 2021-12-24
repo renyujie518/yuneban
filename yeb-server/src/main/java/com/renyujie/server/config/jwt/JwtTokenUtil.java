@@ -24,7 +24,7 @@ public class JwtTokenUtil {
     //荷载的创建时间
     private static final String CLAIM_KEY_CREATED = "created";
     // jwt令牌的秘钥
-    @Value("${jwt.secert}")
+    @Value("${jwt.secret}")
     private String secret;
     //jwt的失效时间
     @Value("${jwt.expiration}")
@@ -49,7 +49,7 @@ public class JwtTokenUtil {
         return Jwts.builder()
                 .setClaims(claims)
                 .setExpiration(generateExpiration())
-                .signWith(SignatureAlgorithm.ES256, secret)
+                .signWith(SignatureAlgorithm.HS512, secret)
                 .compact();
 
 
