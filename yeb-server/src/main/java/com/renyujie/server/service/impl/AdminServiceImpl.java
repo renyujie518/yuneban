@@ -17,6 +17,7 @@ import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
+import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
 import java.util.HashMap;
 import java.util.Map;
@@ -39,7 +40,7 @@ public class AdminServiceImpl extends ServiceImpl<AdminMapper, Admin> implements
     private JwtTokenUtil jwtTokenUtil;
     @Value("$jwt.tokenHead")
     private String tokenHead;
-    @Autowired
+    @Resource
     private AdminMapper adminMapper;
 
 
@@ -59,7 +60,7 @@ public class AdminServiceImpl extends ServiceImpl<AdminMapper, Admin> implements
         if (!userDetails.isEnabled()) {
             return RespBean.error("账号被禁用，请联系管理员");
         }
-        //验证验证码
+        //验证验证码 因为之前在/captcha接口中返给前端的text是放在session中的
         String captcha = (String) request.getSession().getAttribute("captcha");
         if (StringUtils.isEmpty(code) || !captcha.equals(code)) {
             return RespBean.error("验证码填写错误");
