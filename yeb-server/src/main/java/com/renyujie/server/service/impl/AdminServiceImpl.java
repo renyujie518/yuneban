@@ -4,8 +4,10 @@ import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.renyujie.server.config.jwt.JwtTokenUtil;
 import com.renyujie.server.mapper.AdminMapper;
+import com.renyujie.server.mapper.RoleMapper;
 import com.renyujie.server.pojo.Admin;
 import com.renyujie.server.pojo.RespBean;
+import com.renyujie.server.pojo.Role;
 import com.renyujie.server.service.IAdminService;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -20,6 +22,7 @@ import org.springframework.stereotype.Service;
 import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -42,6 +45,8 @@ public class AdminServiceImpl extends ServiceImpl<AdminMapper, Admin> implements
     private String tokenHead;
     @Resource
     private AdminMapper adminMapper;
+    @Resource
+    private RoleMapper roleMapper;
 
 
     /**
@@ -92,5 +97,14 @@ public class AdminServiceImpl extends ServiceImpl<AdminMapper, Admin> implements
             return null;
         }
         return admin;
+    }
+
+
+    /**
+     * @Description: 根据用户id查询该用户所对应的角色
+     */
+    @Override
+    public List<Role> getRolesByAdminId(Integer adminId) {
+        return roleMapper.getRolesByAdminId(adminId);
     }
 }

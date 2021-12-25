@@ -48,6 +48,11 @@ public class AdminLoginController {
         return RespBean.success("注销成功");
     }
 
+
+
+    /**
+     * @Description: 获取当前登录用户信息
+     */
     @ApiOperation(value = "获取当前登录用户信息")
     @GetMapping("/admin/info")
     public Admin getAdminInfo(Principal principal) {
@@ -59,6 +64,8 @@ public class AdminLoginController {
         Admin admin = adminService.getAdminByName(username);
         //密码不必给前端给
         admin.setPassword(null);
+        //把该用户所属的角色（职位）也给前端
+        admin.setRoles(adminService.getRolesByAdminId(admin.getId()));
         return admin;
 
     }

@@ -1,5 +1,7 @@
 package com.renyujie.server.config.security;
 
+import com.renyujie.server.config.filter.CustomFilter;
+import com.renyujie.server.config.filter.CustomUrlDecisionManager;
 import com.renyujie.server.config.jwt.JwtAuthenticationTokenFilter;
 import com.renyujie.server.config.jwt.RestAuthorizationEntryPoint;
 import com.renyujie.server.config.jwt.RestfulAccessDeniedHandler;
@@ -8,15 +10,20 @@ import com.renyujie.server.service.IAdminService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.security.config.annotation.ObjectPostProcessor;
 import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.builders.WebSecurity;
 import org.springframework.security.config.annotation.web.configuration.WebSecurityConfigurerAdapter;
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.core.userdetails.UserDetailsService;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.security.web.access.intercept.FilterSecurityInterceptor;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
+
+import javax.annotation.Resource;
 
 
 /**
@@ -34,6 +41,10 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
     private RestAuthorizationEntryPoint restAuthorizationEntryPoint;
     @Autowired
     private RestfulAccessDeniedHandler restfulAccessDeniedHandler;
+    @Autowired
+    private CustomUrlDecisionManager customUrlDecisionManager;
+    @Autowired
+    private CustomFilter customFilter;
 
 
 
@@ -45,14 +56,18 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
     @Override
     @Bean
     public UserDetailsService userDetailsService() {
-        return username -> {
+        return (username -> {
             //从数据库中获取user信息
             Admin admin = adminService.getAdminByName(username);
             if (admin != null) {
+                //登录时也把用户所属的角色（职位）携带上
+                admin.setRoles(adminService.getRolesByAdminId(admin.getId()));
                 return admin;
             }
-            return null;
-        };
+//            return null;
+//            要是没从数据库中获得admin信息 可以返回null对象 也可以直接抛异常
+            throw new UsernameNotFoundException("用户名或者密码不正确");
+        });
     }
 
     /**
@@ -96,6 +111,15 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
                 //除上述接口，都要认证
                 .anyRequest()
                 .authenticated()
+                //加动态权限配置  用于权限控制（根据请求url分析出请求所需角色+判断用户角色（职位））
+                .withObjectPostProcessor(new ObjectPostProcessor<FilterSecurityInterceptor>() {
+                    @Override
+                    public <O extends FilterSecurityInterceptor> O postProcess(O o) {
+                        o.setAccessDecisionManager(customUrlDecisionManager);
+                        o.setSecurityMetadataSource(customFilter);
+                        return o;
+                    }
+                })
                 .and()
                 //没有用到缓存
                 .headers()
