@@ -11,7 +11,7 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
  * @Description 启动类
  * @createTime 2021年12月20日 17:03:00
  */
-@SpringBootApplication
+@SpringBootApplication(scanBasePackages = {"com.renyujie.server","com.renyujie.server.exception"})
 @MapperScan("com.renyujie.server.mapper")
 public class YebApplication {
     public static void main(String[] args) {
