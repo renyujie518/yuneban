@@ -12,9 +12,41 @@
         <result column="isParent" property="isParent" />
     </resultMap>
 
+    <resultMap id="getAllDepartmentWithChildren" type="com.renyujie.server.pojo.Department" extends="BaseResultMap">
+<!--         相当用循环递归的方式 获得结果后再去调用getAllDepartmentsByParentId方法去匹配对应的id-->
+        <collection property="children" ofType="com.renyujie.server.pojo.Department"
+                    select="com.renyujie.server.mapper.DepartmentMapper.getAllDepartmentsByParentId" column="id">
+        </collection>
+    </resultMap>
+
     <!-- 通用查询结果列 -->
     <sql id="Base_Column_List">
         id, name, parentId, depPath, enabled, isParent
     </sql>
+
+    <!--    添加部门（注意是 select标签）CALLABLE执行存储过程-->
+    <!--   addDep`(in depName varchar(32),in parentId int,in enabled boolean,out result int,out result2 int)-->
+    <select id="addDep" statementType="CALLABLE">
+        call addDep(#{name,mode=IN,jdbcType=VARCHAR},
+                    #{parentId,mode=IN,jdbcType=INTEGER},
+                    #{enabled,mode=IN,jdbcType=BOOLEAN},
+                    #{result,mode=OUT,jdbcType=INTEGER},
+                    #{id,mode=OUT,jdbcType=INTEGER})
+    </select>
+
+    <!--删除部门 （注意是 select标签）CALLABLE执行存储过程-->
+    <!--    `deleteDep`(in did int,out result int)-->
+    <select id="deleteDep" statementType="CALLABLE">
+        call deleteDep(#{id,mode=IN,jdbcType=INTEGER},
+                       #{result,mode=OUT,jdbcType=INTEGER})
+    </select>
+
+    <!--    获取所有部门-->
+    <select id="getAllDepartmentsByParentId" resultMap="getAllDepartmentWithChildren">
+        select
+        <include refid="Base_Column_List"/>
+        from t_department
+        where parentId = #{parentId}
+    </select>
 
 </mapper>
