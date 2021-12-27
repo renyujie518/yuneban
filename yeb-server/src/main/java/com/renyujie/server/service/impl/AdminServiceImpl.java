@@ -4,11 +4,14 @@ import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.renyujie.server.config.jwt.JwtTokenUtil;
 import com.renyujie.server.mapper.AdminMapper;
+import com.renyujie.server.mapper.AdminRoleMapper;
 import com.renyujie.server.mapper.RoleMapper;
 import com.renyujie.server.pojo.Admin;
+import com.renyujie.server.pojo.AdminRole;
 import com.renyujie.server.pojo.RespBean;
 import com.renyujie.server.pojo.Role;
 import com.renyujie.server.service.IAdminService;
+import com.renyujie.server.utils.AdminUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -47,6 +50,8 @@ public class AdminServiceImpl extends ServiceImpl<AdminMapper, Admin> implements
     private AdminMapper adminMapper;
     @Resource
     private RoleMapper roleMapper;
+    @Resource
+    private AdminRoleMapper adminRoleMapper;
 
 
     /**
@@ -106,5 +111,32 @@ public class AdminServiceImpl extends ServiceImpl<AdminMapper, Admin> implements
     @Override
     public List<Role> getRolesByAdminId(Integer adminId) {
         return roleMapper.getRolesByAdminId(adminId);
+    }
+
+
+    /**
+     * @Description: 获取所有操作员
+     * keywords前端传来（即搜索框的输入） 同时还有个基本要求是搜到的操作员应该是非本人之外的所有，所以还有currentAdminID
+     */
+    @Override
+    public List<Admin> getAllAdmins(String keywords) {
+        return adminMapper.getAllAdmin(AdminUtils.getCurrentAdmin().getId(), keywords);
+    }
+
+
+    /**
+     * @Description: 更新操作员角色
+     * 先删除该操作员下的所有角色（其实就是把这个adminId对应的操作员先删了） 再为这个操作员依次添加新角色rids
+     */
+    @Override
+    public RespBean updateAdminRole(Integer adminId, Integer[] rids) {
+        adminRoleMapper.delete(new QueryWrapper<AdminRole>().eq("adminId",adminId));
+        Integer result = adminRoleMapper.addRole(adminId, rids);
+        //如果操作次数 = 新角色rids 代表新角色一一添加成功
+        if (rids.length == result){
+            return RespBean.success("更新操作员角色成功");
+        }
+        return RespBean.error("更新操作员角色失败");
+
     }
 }

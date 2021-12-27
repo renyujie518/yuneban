@@ -31,4 +31,14 @@ public interface IAdminService extends IService<Admin> {
      * @Description: 根据用户id查询该用户所对应的角色
      */
     List<Role> getRolesByAdminId(Integer adminId);
+
+    /**
+     * @Description: 获取所有操作员
+     */
+    List<Admin> getAllAdmins(String keywords);
+
+    /**
+     * @Description: 更新操作员角色
+     */
+    RespBean updateAdminRole(Integer adminId, Integer[] rids);
 }

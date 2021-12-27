@@ -6,8 +6,10 @@ import com.baomidou.mybatisplus.annotation.TableId;
 import com.baomidou.mybatisplus.annotation.TableName;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
+import lombok.AccessLevel;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
+import lombok.Getter;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -49,6 +51,7 @@ public class Admin implements Serializable, UserDetails {
     @ApiModelProperty(value = "联系地址")
     private String address;
 
+    @Getter(AccessLevel.NONE)
     @ApiModelProperty(value = "是否启用")
     private Boolean enabled;
 
@@ -94,6 +97,8 @@ public class Admin implements Serializable, UserDetails {
     }
 
     //这个由于在属性中定义过，所以直接返回enabled属性
+    //注意啊  这里是重写的security中UserDetails的isEnabled()  会与本身Admin属性中的enabled属性的lombok的生成的get方法冲突
+    //所以在该字段上添加了@Getter(AccessLevel.NONE)  代表不让lombok生成getEnabled方法
     @Override
     public boolean isEnabled() {
         return enabled;
