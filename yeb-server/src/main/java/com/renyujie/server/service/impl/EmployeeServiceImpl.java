@@ -44,6 +44,16 @@ public class EmployeeServiceImpl extends ServiceImpl<EmployeeMapper, Employee> i
     }
 
     /**
+     * @Description: 根据id获取员工
+     * @return
+     */
+    @Override
+    public List<Employee> getEmployeeById(Integer id) {
+
+        return employeeMapper.getEmployeeById(id);
+    }
+
+    /**
      * @Description: 获取最大工号
      * 首先利用max函数会得到"max(workID)"这一列 由于用的是selectmap,list中只有1个hashmap,再从map中get到键 这个键就是max(workID)
      * 由于在数据库中存的是char类型，所以转换后+1，再按照格式转化为string，直接放到RespBean的data中

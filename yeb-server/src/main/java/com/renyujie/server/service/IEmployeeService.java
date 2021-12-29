@@ -6,6 +6,7 @@ import com.renyujie.server.pojo.RespBean;
 import com.renyujie.server.pojo.RespPageBean;
 
 import java.time.LocalDate;
+import java.util.List;
 
 /**
  * <p>
@@ -23,6 +24,13 @@ public interface IEmployeeService extends IService<Employee> {
     RespPageBean getEmployeeByPage(Integer currentPage, Integer size, Employee employee, LocalDate[] beginDateScope);
 
     /**
+     * @Description: 根据id获取员工
+     */
+    List<Employee> getEmployeeById(Integer id);
+
+
+
+    /**
      * @Description: 获取最大工号
      */
     RespBean maxWorkId();
@@ -32,4 +40,6 @@ public interface IEmployeeService extends IService<Employee> {
      * @Description: 添加员工
      */
     RespBean insertEmployee(Employee employee);
+
+
 }

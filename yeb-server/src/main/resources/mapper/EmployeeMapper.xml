@@ -39,7 +39,7 @@
 <!--        注意 以下的东西在 Employee.class中是个对象 所以用 association-->
         <association property="nation" javaType="com.renyujie.server.pojo.Nation">
             <id column="nid" property="id"/>
-            <result column="name" property="name"/>
+            <result column="nname" property="name"/>
         </association>
         <association property="politicsStatus" javaType="com.renyujie.server.pojo.PoliticsStatus">
             <id column="pid" property="id"/>
@@ -70,15 +70,15 @@
             SELECT
                 e.*,
                 n.id AS nid,
-                n.NAME AS nname,
+                n.name AS nname,
                 p.id AS pid,
-                p.NAME AS pname,
+                p.name AS pname,
                 d.id AS did,
-                d.NAME AS dname,
+                d.name AS dname,
                 j.id AS jid,
-                j.NAME AS jname,
+                j.name AS jname,
                 pos.id AS posid,
-                pos.NAME AS posname
+                pos.name AS posname
             FROM
                 t_employee e,
                 t_nation n,
@@ -119,6 +119,43 @@
                 </if>
             ORDER BY
                 e.id
+
+    </select>
+
+<!--    根据id获取员工-->
+    <select id="getEmployeeById" resultMap="EmployeeInfo">
+            SELECT
+                e.*,
+                n.id AS nid,
+                n.NAME AS nname,
+                p.id AS pid,
+                p.NAME AS pname,
+                d.id AS did,
+                d.NAME AS dname,
+                j.id AS jid,
+                j.NAME AS jname,
+                pos.id AS posid,
+                pos.NAME AS posname
+            FROM
+                t_employee e,
+                t_nation n,
+                t_politics_status p,
+                t_department d,
+                t_joblevel j,
+                t_position pos
+            WHERE
+                e.nationId = n.id
+                AND e.politicId = p.id
+                AND e.jobLevelId = j.id
+                AND e.departmentId = d.id
+                AND e.posId = pos.id
+                <if test="id != null">
+                    AND e.id = #{id}
+                </if>
+            ORDER BY
+                e.id
+
+
 
     </select>
 

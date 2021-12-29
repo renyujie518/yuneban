@@ -1,12 +1,25 @@
 package com.renyujie.server.controller;
 
 
+import cn.afterturn.easypoi.excel.ExcelExportUtil;
+import cn.afterturn.easypoi.excel.ExcelImportUtil;
+import cn.afterturn.easypoi.excel.entity.ExportParams;
+import cn.afterturn.easypoi.excel.entity.ImportParams;
+import cn.afterturn.easypoi.excel.entity.enmus.ExcelType;
 import com.renyujie.server.pojo.*;
 import com.renyujie.server.service.*;
+import io.swagger.annotations.ApiImplicitParam;
+import io.swagger.annotations.ApiImplicitParams;
 import io.swagger.annotations.ApiOperation;
+import org.apache.poi.ss.usermodel.Workbook;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
+import javax.servlet.ServletOutputStream;
+import javax.servlet.http.HttpServletResponse;
+import java.io.IOException;
+import java.net.URLEncoder;
 import java.time.LocalDate;
 import java.util.List;
 
@@ -105,6 +118,86 @@ public class EmployeeController {
             return RespBean.success("删除员工成功");
         }
         return RespBean.error("删除员工失败");
+    }
+
+    @ApiOperation(value = "导出员工数据")
+    @GetMapping(value = "/export",produces = "application/octet-stream") //流的形式输出
+    public void exportEmployee(HttpServletResponse response){
+        //不传参数就是查询所有
+        List<Employee> employeeList = employeeService.getEmployeeById(null);
+        ExportParams exportParams = new ExportParams("员工表", "员工表", ExcelType.HSSF);
+        Workbook workbook = ExcelExportUtil.exportExcel(exportParams, Employee.class, employeeList);
+        ServletOutputStream outputStream = null;
+        try {
+            //流形式
+            response.setHeader("content-type","application/octet-stream");
+            //中文乱码
+            response.setHeader("content-disposition","attachment;filename="+ URLEncoder.encode("员工表.xls","UTF-8"));
+            outputStream = response.getOutputStream();
+            workbook.write(outputStream);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }finally {
+            if (outputStream != null) {
+                try {
+                    outputStream.flush();
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+                try {
+                    outputStream.close();
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+            }
+        }
+    }
+
+    @ApiOperation(value = "导入员工数据")
+    @ApiImplicitParams({@ApiImplicitParam(name="file",value = "上传文件",dataType = "MultipartFile")})
+    @PostMapping("/import")
+    public RespBean importEmployee(MultipartFile file){
+        ImportParams params = new ImportParams();
+        //去掉标题行
+        params.setTitleRows(1);
+        //先把外键的表信息拿到 比如对于Nation只查了一次数据库
+        List<Nation> nations = nationService.list();
+        List<PoliticsStatus> politicsStatuses = politicsStatusService.list();
+        List<Position> positions = positionService.list();
+        List<Department> departments = departmentService.list();
+        List<Joblevel> joblevels = joblevelService.list();
+        try {
+            List<Employee> importList = ExcelImportUtil.importExcel(file.getInputStream(), Employee.class, params);
+            /**
+             * 以Nation为例
+             * 先利用有参构造 name部分是必填的 这时候new完的对象只有Nation.name,Nation.id = null
+             * 但是之前已经查好了所有的Nation对象List
+             indexOf就是利用了hashcode+equal去比较拿到下标(注意 这是list<Nation>中对应的下标)，这样就拿到了以name指定的唯一的对象
+             这个对象是有name  有id的 因为是从nationService.list()中取的 这里面的对象是完整的
+             再去getid放入
+             **/
+            importList.forEach(employee ->{
+                //民族id
+                employee.setNationId(nations.get(nations.indexOf(new Nation(employee.getNation().getName()))).getId());
+                //政治面貌id
+                employee.setPoliticId(politicsStatuses.get(politicsStatuses.indexOf(new PoliticsStatus(employee.getPoliticsStatus().getName()))).getId());
+                //部门id
+                employee.setDepartmentId(departments.get(departments.indexOf(new Department(employee.getDepartment().getName()))).getId());
+                //职称id
+                employee.setJobLevelId(joblevels.get(joblevels.indexOf(new Joblevel(employee.getJoblevel().getName()))).getId());
+                //职位id
+                employee.setPosId(positions.get(positions.indexOf(new Position(employee.getPosition().getName()))).getId());
+            });
+            //至此 list<employee>中的各个employee中的各个外键id都补充好了 可以批量插入到数据库作为新导入的员工
+            if (employeeService.saveBatch(importList)){
+                return RespBean.success("导入成功");
+            }
+            return RespBean.error("导入失败");
+
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return RespBean.error("导入失败");
     }
 
 }
