@@ -35,9 +35,91 @@
         <result column="salaryId" property="salaryId" />
     </resultMap>
 
+    <resultMap id="EmployeeInfo" type="com.renyujie.server.pojo.Employee" extends="BaseResultMap">
+<!--        注意 以下的东西在 Employee.class中是个对象 所以用 association-->
+        <association property="nation" javaType="com.renyujie.server.pojo.Nation">
+            <id column="nid" property="id"/>
+            <result column="name" property="name"/>
+        </association>
+        <association property="politicsStatus" javaType="com.renyujie.server.pojo.PoliticsStatus">
+            <id column="pid" property="id"/>
+            <result column="pname" property="name"/>
+        </association>
+        <association property="department" javaType="com.renyujie.server.pojo.Department">
+            <id column="did" property="id"/>
+            <result column="dname" property="name"/>
+        </association>
+        <association property="joblevel" javaType="com.renyujie.server.pojo.Joblevel">
+            <id column="jid" property="id"/>
+            <result column="jname" property="name"/>
+        </association>
+        <association property="position" javaType="com.renyujie.server.pojo.Position">
+            <id column="posid" property="id"/>
+            <result column="posname" property="name"/>
+        </association>
+    </resultMap>
+
     <!-- 通用查询结果列 -->
     <sql id="Base_Column_List">
         id, name, gender, birthday, idCard, wedlock, nationId, nativePlace, politicId, email, phone, address, departmentId, jobLevelId, posId, engageForm, tiptopDegree, specialty, school, beginDate, workState, workID, contractTerm, conversionTime, notWorkDate, beginContract, endContract, workAge, salaryId
     </sql>
+
+
+<!--    获取所有员工（分页）-->
+    <select id="getEmployeeByPage" resultMap="EmployeeInfo">
+            SELECT
+                e.*,
+                n.id AS nid,
+                n.NAME AS nname,
+                p.id AS pid,
+                p.NAME AS pname,
+                d.id AS did,
+                d.NAME AS dname,
+                j.id AS jid,
+                j.NAME AS jname,
+                pos.id AS posid,
+                pos.NAME AS posname
+            FROM
+                t_employee e,
+                t_nation n,
+                t_politics_status p,
+                t_department d,
+                t_joblevel j,
+                t_position pos
+            WHERE
+                e.nationId = n.id
+                AND e.politicId = p.id
+                AND e.jobLevelId = j.id
+                AND e.departmentId = d.id
+                AND e.posId = pos.id
+--                 以下这些在前端都是可有可无的  不填也可以
+                <if test="employee.name != null and employee.name!=''">
+                    AND e.`name` LIKE CONCAT( '%', #{employee.name}, '%' )
+                </if>
+                <if test="employee.politicId != null and employee.politicId!=''">
+                    AND e.politicId = #{employee.politicId}
+                </if>
+                <if test="employee.nationId != null and employee.nationId!=''">
+                    AND e.nationId = #{employee.nationId}
+                </if>
+                <if test="employee.jobLevelId != null and employee.jobLevelId!=''">
+                    AND e.jobLevelId = #{employee.jobLevelId}
+                </if>
+                <if test="employee.posId != null and employee.posId!=''">
+                    AND e.posId = #{employee.posId}
+                </if>
+                <if test="employee.engageForm != null and employee.engageForm!=''">
+                    AND e.engageForm = #{employee.engageForm}
+                </if>
+                <if test="employee.departmentId != null and employee.departmentId != ''">
+                    AND e.departmentId = #{employee.departmentId}
+                </if>
+                <if test="null != beginDateScope and 2 == beginDateScope.length">
+                    AND e.beginDate between #{beginDateScope[0]} and #{beginDateScope[1]}
+                </if>
+            ORDER BY
+                e.id
+
+    </select>
 
 </mapper>
