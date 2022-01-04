@@ -3,6 +3,7 @@ package com.renyujie.server;
 import org.mybatis.spring.annotation.MapperScan;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
+import org.springframework.scheduling.annotation.EnableScheduling;
 
 /**
  * @author renyujie518
@@ -13,6 +14,7 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
  */
 @SpringBootApplication(scanBasePackages = {"com.renyujie.server","com.renyujie.server.exception"})
 @MapperScan("com.renyujie.server.mapper")
+@EnableScheduling
 public class YebApplication {
     public static void main(String[] args) {
         SpringApplication.run(YebApplication.class, args);

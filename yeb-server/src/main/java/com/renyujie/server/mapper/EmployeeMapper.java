@@ -26,7 +26,7 @@ public interface EmployeeMapper extends BaseMapper<Employee> {
 
 
     /**
-     * @Description: 根据id获取员工
+     * @Description: 根据id获取员工 不传id就是获取所有员工 所以返回list 传入id list只会有一个
      */
     List<Employee> getEmployeeById(Integer id);
 }
