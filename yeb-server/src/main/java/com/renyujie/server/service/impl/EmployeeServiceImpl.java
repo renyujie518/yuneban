@@ -127,4 +127,16 @@ public class EmployeeServiceImpl extends ServiceImpl<EmployeeMapper, Employee> i
         }
         return RespBean.error("添加员工失败");
     }
+
+    /**
+     * @Description: 获取所有员工套账
+     */
+    @Override
+    public RespPageBean getEmployeeWithSalary(Integer currentPage, Integer size) {
+        Page<Employee> page = new Page<>(currentPage, size);
+        IPage<Employee> employeeIPage = employeeMapper.getEmployeeWithSalary(page);
+        RespPageBean respPageBean = new RespPageBean(employeeIPage.getTotal(), employeeIPage.getRecords());
+        return respPageBean;
+
+    }
 }

@@ -42,4 +42,8 @@ public interface IEmployeeService extends IService<Employee> {
     RespBean insertEmployee(Employee employee);
 
 
+    /**
+     * @Description: 获取所有员工套账
+     */
+    RespPageBean getEmployeeWithSalary(Integer currentPage, Integer size);
 }
